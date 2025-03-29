@@ -1,6 +1,7 @@
 package com.susanto.zap_url.service;
 
 import com.susanto.zap_url.entity.UrlMapping;
+import com.susanto.zap_url.exception.RateLimitException;
 import com.susanto.zap_url.repository.UrlRepository;
 import com.susanto.zap_url.util.Base62Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,11 @@ public class UrlService {
         this.urlRepository = urlRepository;
     }
 
-    public String shortenUrl(String longUrl) {
+    public String shortenUrl(String longUrl, String userIp) {
+        if (redisService.isRateLimited(userIp)) {
+            throw new RateLimitException("Too many requests! Try again later.");
+        }
+
         // Step 1: Check Redis cache
         String cachedShortCode = redisService.getUrlFromCache(longUrl);
         if (cachedShortCode != null) {

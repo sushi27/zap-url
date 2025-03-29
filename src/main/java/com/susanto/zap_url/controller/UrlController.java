@@ -12,23 +12,23 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/")
 public class UrlController {
-    private final UrlService service;
+    private final UrlService urlService;
 
-    public UrlController(UrlService service) {
-        this.service = service;
+    public UrlController(UrlService urlService) {
+        this.urlService = urlService;
     }
 
     @PostMapping("/shorten")
     public ResponseEntity<Map<String, String>> shortenUrl(@RequestBody Map<String, String> request) {
         String longUrl = request.get("longUrl");
-        String shortCode = service.shortenUrl(longUrl);
+        String shortCode = urlService.shortenUrl(longUrl);
         String shortUrl = "http://localhost:8080/" + shortCode;
         return ResponseEntity.ok(Map.of("shortUrl", shortUrl));
     }
 
     @GetMapping("/{shortCode}")
     public ResponseEntity<Object> redirectToOriginal(@PathVariable String shortCode) {
-        return service.getLongUrl(shortCode)
+        return urlService.getLongUrl(shortCode)
                 .map(url -> ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build())
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

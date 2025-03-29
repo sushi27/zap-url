@@ -12,10 +12,14 @@ public class RedisService {
     @Autowired
     StringRedisTemplate redisTemplate;
 
-    private static final long EXPIRATION_TIME = 24; // Cache expiry in hours
+    private static final long EXPIRATION_TIME = 7; // Cache expiry for less-used URLs (days)
 
-    public void saveUrlToCache(String key, String value) {
-        redisTemplate.opsForValue().set(key, value, EXPIRATION_TIME, TimeUnit.HOURS);
+    public void saveShortToLong(String shortCode, String longUrl) {
+        redisTemplate.opsForValue().set(shortCode, longUrl);
+    }
+
+    public void saveLongToShort(String longUrl, String shortCode) {
+        redisTemplate.opsForValue().set(longUrl, shortCode, EXPIRATION_TIME, TimeUnit.DAYS);
     }
 
     public String getUrlFromCache(String key) {

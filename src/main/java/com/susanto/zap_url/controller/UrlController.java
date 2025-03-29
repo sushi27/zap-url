@@ -28,8 +28,8 @@ public class UrlController {
 
     @GetMapping("/{shortCode}")
     public ResponseEntity<Object> redirectToOriginal(@PathVariable String shortCode) {
-        Optional<String> longUrl = service.getLongUrl(shortCode).describeConstable();
-        return longUrl.map(url -> ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build())
+        return service.getLongUrl(shortCode)
+                .map(url -> ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build())
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

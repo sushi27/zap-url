@@ -3,7 +3,6 @@ package com.susanto.zap_url.service;
 import com.susanto.zap_url.entity.UrlMapping;
 import com.susanto.zap_url.repository.UrlRepository;
 import com.susanto.zap_url.util.Base62Encoder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -11,7 +10,6 @@ import java.util.Optional;
 
 @Service
 public class UrlService {
-    @Autowired
     private final UrlRepository urlRepository;
 
     public UrlService(UrlRepository urlRepository) {
@@ -24,20 +22,20 @@ public class UrlService {
             return existing.get().getShortCode();
         }
 
+        // Step 2: Generate a deterministic Base62 hash
+        String shortCode = Base62Encoder.hashToBase62(longUrl);
+
+        // Step 3: Save the new mapping
         UrlMapping urlMapping = new UrlMapping();
         urlMapping.setLongUrl(longUrl);
-        urlMapping = urlRepository.save(urlMapping);
-
-        String shortCode = Base62Encoder.encode(urlMapping.getId());
-
         urlMapping.setShortCode(shortCode);
         urlRepository.save(urlMapping);
 
         return shortCode;
     }
 
-    public String getLongUrl(String shortCode) {
-        long id = Base62Encoder.decode(shortCode);
-        return urlRepository.findById(id).map(UrlMapping::getLongUrl).orElse(null);
+    public Optional<String> getLongUrl(String shortCode) {
+        return urlRepository.findByShortCode(shortCode)
+                .map(UrlMapping::getLongUrl);
     }
 }

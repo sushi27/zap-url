@@ -21,6 +21,11 @@ public class UrlController {
         this.urlService = urlService;
     }
 
+    @GetMapping("/hello")
+    public ResponseEntity<String> hellowWorld() {
+        return ResponseEntity.status(HttpStatus.OK).body("Hello World");
+    }
+
     @PostMapping("/shorten")
     public ResponseEntity<Map<String, String>> shortenUrl(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         String userIp = httpRequest.getRemoteAddr(); // Get client IP

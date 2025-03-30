@@ -1,21 +1,25 @@
-spring:
+server:
+  port: 8080
 
+spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/shorturl
-    username: postgres
+    url: jdbc:postgresql://db:5432/zap_url
+    username: user
     password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
 
-  spring:
-    redis:
-      host: redis
-      port: 6379
+  redis:
+    host: redis
+    port: 6379
+    timeout: 5000
 
 logging:
   level:
     root: INFO
+    org.springframework.web: DEBUG

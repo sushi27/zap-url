@@ -1,58 +1,51 @@
 version: '3.8'
 
 services:
+  # NGINX Load Balancer
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # Mount custom config
+    depends_on:
+      - app
+    networks:
+      - zap-url-network
+
+  # Spring Boot App (Scalable)
   app:
     image: zap-url-app
     build: .
-    container_name: zap_url_app
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/zap_url
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-    ports:
-      - "8080:8080"
+      SERVER_PORT: 8080  # All instances use the same port (Docker handles routing)
     networks:
       - zap-url-network
-    restart: always
 
+  # PostgreSQL & Redis (unchanged)
   db:
     image: postgres:latest
-    container_name: zap_url_db
     environment:
       POSTGRES_DB: zap_url
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - zap-url-network
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d zap_url"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   redis:
     image: redis:latest
-    container_name: zap_url_redis
-    ports:
-      - "6379:6379"
+    command: ["redis-server", "--bind", "0.0.0.0"]
     volumes:
       - redis_data:/data
     networks:
       - zap-url-network
-    restart: always
-    command: ["redis-server", "--bind", "0.0.0.0"]
 
 networks:
   zap-url-network:

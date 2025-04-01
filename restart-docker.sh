@@ -10,7 +10,7 @@ echo "Building Java application with Maven..."
 mvn clean package -DskipTests
 
 echo "Rebuilding and starting Docker containers..."
-docker-compose up --build -d
+docker-compose up --build -d --scale app=2
 
 echo "Waiting for containers to initialize (15 seconds)..."
 sleep 15
@@ -18,11 +18,11 @@ sleep 15
 echo "Containers status:"
 docker-compose ps
 
-echo "Redis container logs:"
-docker logs zap_url_redis
+echo "Fetching logs from ALL app instances..."
+for container in $(docker ps --filter "name=zap_url_app" --format "{{.Names}}"); do
+  echo -e "\nLogs for $container:"
+  docker logs $container --tail=50  # Show last 50 lines per instance
+done
 
-echo "Testing Redis connection from inside the app container..."
-docker exec zap_url_app sh -c "nc -zv redis 6379 || echo 'Connection failed'"
-
-echo "Application logs:"
-docker-compose logs -f app
+echo -e "\nTailing live logs (Ctrl+C to exit)..."
+docker-compose logs -f app  # Stream combined logs

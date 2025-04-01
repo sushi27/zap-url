@@ -27,7 +27,7 @@ public class UrlController {
         String longUrl = request.get("longUrl");
         try {
             String shortCode = urlService.shortenUrl(longUrl, userIp);
-            String shortUrl = "http://localhost:8080/" + shortCode;
+            String shortUrl = "http://localhost/" + shortCode;
             return ResponseEntity.ok(Map.of("shortUrl", shortUrl));
         } catch (RateLimitException e) {
             Map<String, String> errorResponse = new HashMap<>();

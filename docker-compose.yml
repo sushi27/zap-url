@@ -6,8 +6,10 @@ services:
     build: .
     container_name: zap_url_app
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/zap_url
       SPRING_DATASOURCE_USERNAME: user
@@ -29,15 +31,24 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - zap-url-network
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d zap_url"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:latest
     container_name: zap_url_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
       - zap-url-network
     restart: always
@@ -46,3 +57,7 @@ services:
 networks:
   zap-url-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
